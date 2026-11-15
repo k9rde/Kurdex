@@ -1,0 +1,9 @@
+{
+  "versionCode": 10,
+  "versionName": "1.4.6",
+  "minSupportedVersion": 1,
+  "releaseNotes": "• ترقية حساب القبلة بمعادلة فينسنتي الجيوديسية (WGS84) لدقة فلكية فائقة على موقع المستخدم الفعلي\n• تحديد موقع GPS حي ومتعدد المزودات (Fused/GPS/Network) مع عرض الدقة والإحداثيات ومؤشر المعايرة\n• تعويض إمالة الهاتف ثلاثي الأبعاد ومنع انقلاب البوصلة، مع كاشف التداخل المغناطيسي وميزان تسوية مدمج\n• ويدجت زجاجي متكامل بدون فراغات مع عداد رقمي حي للصلاة القادمة في أعلى الوسط",
+  "telegramUrl": "https://t.me/AS3SA",
+  "downloadUrl": "https://ais-dev-u3bbyddierfnvqnk2dov33-152810655533.europe-west2.run.app/salati-app.apk",
+  "isMandatory": false
+}

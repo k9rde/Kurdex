@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Base frosted translucent emerald glass -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="#C409291F"
+                android:centerColor="#B30F3D2E"
+                android:endColor="#C7051812"
+                android:type="linear" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+
+    <!-- Diagonal liquid glass specular reflection sheen -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="#2EFFFFFF"
+                android:centerColor="#0CFFFFFF"
+                android:endColor="#00FFFFFF"
+                android:type="linear" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+
+    <!-- Subtle inner frost rim highlight -->
+    <item
+        android:left="1.2dp"
+        android:top="1.2dp"
+        android:right="1.2dp"
+        android:bottom="1.2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#00000000" />
+            <corners android:radius="23dp" />
+            <stroke
+                android:width="0.9dp"
+                android:color="#30FFFFFF" />
+        </shape>
+    </item>
+
+    <!-- Crisp outer luminous gold-frosted glass rim -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#00000000" />
+            <corners android:radius="24dp" />
+            <stroke
+                android:width="1.25dp"
+                android:color="#6BE8C872" />
+        </shape>
+    </item>
+</layer-list>

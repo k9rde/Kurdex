@@ -1,0 +1,6 @@
+{
+  "name": "صلاتي وأذكاري",
+  "description": "مواقيت الصلاة لجميع دول العالم، ضبط وتصحيح بالإنترنت وبدون إنترنت، مسبحة إلكترونية زجاجية وأدعية وقبلة.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
