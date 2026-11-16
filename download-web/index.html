@@ -21,21 +21,32 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(212, 175, 55, 0.3);
             border-radius: 28px;
-            max-width: 440px;
+            max-width: 480px;
             width: 100%;
-            padding: 36px 24px;
+            padding: 32px 24px;
             text-align: center;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
         }
         .icon {
-            width: 130px;
-            height: 130px;
+            width: 120px;
+            height: 120px;
             border-radius: 26px;
-            margin: 0 auto 20px;
+            margin: 0 auto 16px;
             border: 2px solid #D4AF37;
             box-shadow: 0 10px 30px rgba(212, 175, 55, 0.35);
             display: block;
             object-fit: cover;
+        }
+        .version-pill {
+            display: inline-block;
+            background: rgba(212, 175, 55, 0.18);
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            color: #FAF089;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 999px;
+            margin-bottom: 10px;
         }
         h1 {
             font-size: 26px;
@@ -46,14 +57,45 @@
         p.subtitle {
             color: #CBD5E0;
             font-size: 14px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             line-height: 1.6;
+        }
+        .whats-new-box {
+            background: linear-gradient(145deg, rgba(212, 175, 55, 0.14), rgba(16, 85, 62, 0.25));
+            border: 1px solid rgba(212, 175, 55, 0.45);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: right;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #FAF089;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .whats-new-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .whats-new-item {
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 9px 11px;
+            font-size: 13px;
+            line-height: 1.55;
+            color: #F7FAFC;
         }
         .features {
             background: rgba(0, 0, 0, 0.25);
             border-radius: 18px;
             padding: 16px;
-            margin-bottom: 26px;
+            margin-bottom: 24px;
             text-align: right;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
@@ -97,17 +139,31 @@
 <body>
     <div class="card">
         <img src="app_icon.jpg" alt="أيقونة صلاتي وأذكاري" class="icon">
+        <div class="version-pill" id="version-badge">✨ آخر إصدار: v1.4.8</div>
         <h1>صلاتي وأذكاري</h1>
         <p class="subtitle">المواقيت الدقيقة لكافة أشهر السنة ومختلف دول العالم، إمساكية تفاعلية، أصوات كبار الأئمة، بوصلة القبلة، والمسبحة الزجاجية الفاخرة</p>
+
+        <div class="whats-new-box" id="whats-new-box">
+            <div class="section-title" id="whats-new-title">✨ ما تم إضافته في آخر نسخة (v1.4.8):</div>
+            <div class="whats-new-list" id="whats-new-list">
+                <div class="whats-new-item">🔄 جدولة مزامنة دورية في الخلفية عبر WorkManager لتحديث المواقيت تلقائياً عند توفر الإنترنت وتغيّر الموقع الجغرافي</div>
+                <div class="whats-new-item">🎛️ التحكم بإظهار أو إخفاء إشعار العد التنازلي الدائم في لوحة الإشعارات مباشرة من الإعدادات (اختياري حسب رغبتك)</div>
+                <div class="whats-new-item">✨ عرض ما تم إضافته في كل تحديث مع رموز وإيموجيات توضيحية داخل التطبيق وصفحة التحميل</div>
+                <div class="whats-new-item">🔔 تنبيهات دقيقة عند دخول كل صلاة حسب موقعك الحالي عبر NotificationManager والمنبهات الدقيقة</div>
+                <div class="whats-new-item">🧭 ترقية بوصلة القبلة بمعادلة فينسنتي (WGS84) وتعويض الإمالة ثلاثي الأبعاد</div>
+            </div>
+        </div>
+
         <div class="features">
+            <div class="section-title" style="color: #9AE6B4; margin-bottom: 12px;">🌟 المميزات الرئيسية للتطبيق:</div>
             <div class="feature-item"><span>🕋</span> بوصلة القبلة الذكية بالشمال الحقيقي ودقة فلكية 100%</div>
             <div class="feature-item"><span>🔥</span> سجل الصلوات اليومي وسلسلة الالتزام مع عدّاد الإقامة</div>
             <div class="feature-item"><span>📖</span> قارئ الورد القرآني والأذكار التفاعلية وتحدي الذكر المشترك</div>
             <div class="feature-item"><span>📸</span> بطاقات ستوري زجاجية فاخرة لمشاركة الأدعية والآيات</div>
             <div class="feature-item"><span>📱</span> ويدجت الشاشة الرئيسية وإشعارات الأذان بأصوات كبار الأئمة</div>
         </div>
-        <a href="salati-app.apk" class="btn" download>📥 تحميل التطبيق الآن (APK)</a>
-        <div class="size-info">الإصدار 1.4.6 • متوافق مع كافة أجهزة أندرويد</div>
+        <a href="salati-app.apk" id="download-apk-btn" class="btn" download>📥 تحميل أحدث إصدار الآن (APK)</a>
+        <div class="size-info" id="version-footer">الإصدار 1.4.8 • متوافق مع كافة أجهزة أندرويد</div>
 
         <div style="margin-top: 26px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
             <div style="font-size: 14px; font-weight: bold; color: #FAF089; margin-bottom: 12px; letter-spacing: 0.5px;">للتواصل مع المطور</div>
@@ -118,5 +174,40 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Dynamically sync latest release notes and version number from version.json
+        fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+            .then(function(res) { return res.ok ? res.json() : null; })
+            .then(function(data) {
+                if (!data || !data.versionName) return;
+                var badge = document.getElementById('version-badge');
+                var title = document.getElementById('whats-new-title');
+                var footer = document.getElementById('version-footer');
+                var list = document.getElementById('whats-new-list');
+                var btn = document.getElementById('download-apk-btn');
+
+                if (badge) badge.textContent = '✨ آخر إصدار: v' + data.versionName;
+                if (title) title.textContent = '✨ ما تم إضافته في آخر نسخة (v' + data.versionName + '):';
+                if (footer) footer.textContent = 'الإصدار ' + data.versionName + ' • متوافق مع كافة أجهزة أندرويد';
+                if (btn && data.downloadUrl) btn.setAttribute('href', data.downloadUrl);
+
+                if (list && data.releaseNotes) {
+                    var lines = data.releaseNotes.split('\n')
+                        .map(function(l) { return l.replace(/^[•\-*]\s*/, '').trim(); })
+                        .filter(Boolean);
+                    if (lines.length > 0) {
+                        list.innerHTML = '';
+                        lines.forEach(function(line) {
+                            var div = document.createElement('div');
+                            div.className = 'whats-new-item';
+                            div.textContent = line;
+                            list.appendChild(div);
+                        });
+                    }
+                }
+            })
+            .catch(function() {});
+    </script>
 </body>
 </html>

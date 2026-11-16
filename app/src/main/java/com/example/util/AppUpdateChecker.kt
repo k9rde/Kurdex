@@ -22,8 +22,8 @@ import java.util.concurrent.TimeUnit
 object AppUpdateChecker {
     private const val TAG = "AppUpdateChecker"
 
-    const val CURRENT_VERSION_CODE = 10
-    const val CURRENT_VERSION_NAME = "1.4.6"
+    const val CURRENT_VERSION_CODE = 12
+    const val CURRENT_VERSION_NAME = "1.4.8"
 
     const val TELEGRAM_CHANNEL_URL = "https://t.me/AS3SA"
     const val TELEGRAM_DEEP_LINK = "tg://resolve?domain=AS3SA"
@@ -231,8 +231,9 @@ object AppUpdateChecker {
             val tagName = json.optString("tag_name", "").trim()
             if (tagName.isBlank()) return null
             val cleanName = tagName.trimStart('v', 'V')
-            val notes = json.optString("body", "إصدار جديد متوفر على GitHub.")
+            val rawNotes = json.optString("body", "إصدار جديد متوفر على GitHub.")
                 .ifBlank { "إصدار جديد يتضمن تحسينات وميزات إضافية للتطبيق." }
+            val notes = formatReleaseNotesWithEmojis(rawNotes)
 
             var apkUrl = json.optString("html_url", DIRECT_APK_DOWNLOAD_URL)
             val assets = json.optJSONArray("assets")
@@ -261,7 +262,7 @@ object AppUpdateChecker {
                 directApkDownloadUrl = apkUrl,
                 isMandatory = false,
                 checkStatusMessage = if (hasUpdate) {
-                    "يتوفر إصدار جديد ($cleanName)!"
+                    "يتوفر إصدار جديد ($cleanName) ✨"
                 } else {
                     "التطبيق محدّث إلى آخر إصدار ($installedName) ✓"
                 }
@@ -272,7 +273,8 @@ object AppUpdateChecker {
         if (!json.has("versionCode") && !json.has("versionName")) return null
         val latestCode = json.optInt("versionCode", installedCode)
         val latestName = json.optString("versionName", installedName)
-        val notes = json.optString("releaseNotes", "تحديث جديد يتضمن تحسينات وميزات إضافية للتطبيق.")
+        val rawNotes = json.optString("releaseNotes", "تحديث جديد يتضمن تحسينات وميزات إضافية للتطبيق.")
+        val notes = formatReleaseNotesWithEmojis(rawNotes)
         val telegram = json.optString("telegramUrl", TELEGRAM_CHANNEL_URL)
         val download = json.optString("downloadUrl", DIRECT_APK_DOWNLOAD_URL)
         val isMandatory = json.optBoolean("isMandatory", false)
@@ -290,11 +292,66 @@ object AppUpdateChecker {
             directApkDownloadUrl = download,
             isMandatory = isMandatory,
             checkStatusMessage = if (hasUpdate) {
-                "يتوفر إصدار جديد ($latestName)!"
+                "يتوفر إصدار جديد ($latestName) ✨"
             } else {
                 "التطبيق محدّث إلى آخر إصدار ($installedName) ✓"
             }
         )
+    }
+
+    fun extractReleaseNoteItems(rawNotes: String): List<Pair<String, String>> {
+        val lines = rawNotes.lines()
+            .map { line ->
+                line.trim()
+                    .removePrefix("•")
+                    .removePrefix("-")
+                    .removePrefix("*")
+                    .trim()
+            }
+            .filter { it.isNotBlank() }
+
+        return lines.map { clean ->
+            val firstCp = clean.codePointAt(0)
+            val isAlreadyEmoji = Character.isSupplementaryCodePoint(firstCp) ||
+                Character.getType(firstCp) == Character.OTHER_SYMBOL.toInt()
+            if (isAlreadyEmoji) {
+                val charCount = Character.charCount(firstCp)
+                val firstPart = clean.substring(0, charCount)
+                // Handle optional variation selector (FE0F) right after symbol
+                val restStart = if (clean.length > charCount && clean[charCount] == '\uFE0F') {
+                    charCount + 1
+                } else {
+                    charCount
+                }
+                val emoji = clean.substring(0, restStart)
+                val body = clean.substring(restStart).trim()
+                emoji to body.ifBlank { clean }
+            } else {
+                pickEmojiForFeature(clean) to clean
+            }
+        }
+    }
+
+    fun formatReleaseNotesWithEmojis(rawNotes: String): String {
+        val items = extractReleaseNoteItems(rawNotes)
+        if (items.isEmpty()) return rawNotes.trim()
+        return items.joinToString("\n") { (emoji, text) -> "$emoji $text" }
+    }
+
+    private fun pickEmojiForFeature(text: String): String {
+        val lower = text.lowercase(Locale.ROOT)
+        return when {
+            lower.contains("قبلة") || lower.contains("بوصلة") || lower.contains("qibla") || lower.contains("compass") -> "🧭"
+            lower.contains("أدعية") || lower.contains("دعاء") || lower.contains("أذكار") || lower.contains("تسبيح") || lower.contains("مسبحة") -> "🤲"
+            lower.contains("قرآن") || lower.contains("ورد") || lower.contains("سورة") -> "📖"
+            lower.contains("workmanager") || lower.contains("مزامنة") || lower.contains("دوري") || lower.contains("تلقائي") -> "🔄"
+            lower.contains("إشعار") || lower.contains("أذان") || lower.contains("تنبيه") || lower.contains("خدمة خلفية") -> "🔔"
+            lower.contains("موقع") || lower.contains("gps") || lower.contains("مدينة") -> "📍"
+            lower.contains("ويدجت") || lower.contains("زجاج") || lower.contains("واجهة") || lower.contains("شاشة") -> "📱"
+            lower.contains("تحديث") || lower.contains("إصدار") || lower.contains("تحميل") -> "🚀"
+            lower.contains("إصلاح") || lower.contains("استقرار") || lower.contains("أداء") || lower.contains("سرعة") -> "⚡"
+            else -> "✨"
+        }
     }
 
     suspend fun downloadApkDirectly(

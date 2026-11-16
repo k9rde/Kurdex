@@ -220,8 +220,8 @@ class ExampleUnitTest {
         // Check Mosul Iraq Qibla angle roughly south (~190 degrees)
         val qiblaMosul = PrayerCalculator.getQiblaAngle(36.3489, 43.1577)
         assertTrue("Mosul Qibla should point South/Southwest (~190 deg), got $qiblaMosul", qiblaMosul in 180.0..200.0)
-        assertEquals(10, com.example.util.AppUpdateChecker.CURRENT_VERSION_CODE)
-        assertEquals("1.4.6", com.example.util.AppUpdateChecker.CURRENT_VERSION_NAME)
+        assertEquals(12, com.example.util.AppUpdateChecker.CURRENT_VERSION_CODE)
+        assertEquals("1.4.8", com.example.util.AppUpdateChecker.CURRENT_VERSION_NAME)
     }
 
     @Test
@@ -231,8 +231,25 @@ class ExampleUnitTest {
         assertTrue(urls.any { it == "https://raw.githubusercontent.com/myuser/salati-app/master/download-web/version.json" })
         assertTrue(urls.any { it == "https://api.github.com/repos/myuser/salati-app/releases/latest" })
 
-        assertTrue(com.example.util.AppUpdateChecker.isRemoteVersionNewer(10, 10, "1.5.0", "1.4.6"))
-        assertFalse(com.example.util.AppUpdateChecker.isRemoteVersionNewer(10, 10, "1.4.6", "1.4.6"))
-        assertTrue(com.example.util.AppUpdateChecker.isRemoteVersionNewer(11, 10, "1.4.6", "1.4.6"))
+        assertTrue(com.example.util.AppUpdateChecker.isRemoteVersionNewer(12, 12, "1.5.0", "1.4.8"))
+        assertFalse(com.example.util.AppUpdateChecker.isRemoteVersionNewer(12, 12, "1.4.8", "1.4.8"))
+        assertTrue(com.example.util.AppUpdateChecker.isRemoteVersionNewer(13, 12, "1.4.8", "1.4.8"))
+    }
+
+    @Test
+    fun testReleaseNotesEmojiFormattingAndExtraction() {
+        val raw = "• إضافة بوصلة القبلة الذكية\n- تحديث الأدعية والأذكار اليومية\n• مزامنة دورية عبر WorkManager عند تغير الموقع"
+        val items = com.example.util.AppUpdateChecker.extractReleaseNoteItems(raw)
+        assertEquals(3, items.size)
+        assertEquals("🧭", items[0].first)
+        assertEquals("🤲", items[1].first)
+        assertEquals("🔄", items[2].first)
+
+        val alreadyPrefixed = "🔔 إشعار الأذان التلقائي\n📱 تصميم زجاجي محسن"
+        val parsed = com.example.util.AppUpdateChecker.extractReleaseNoteItems(alreadyPrefixed)
+        assertEquals("🔔", parsed[0].first)
+        assertEquals("إشعار الأذان التلقائي", parsed[0].second)
+        assertEquals("📱", parsed[1].first)
+        assertEquals("تصميم زجاجي محسن", parsed[1].second)
     }
 }

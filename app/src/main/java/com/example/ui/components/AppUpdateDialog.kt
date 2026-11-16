@@ -43,6 +43,7 @@ import com.example.ui.theme.EmeraldLight
 import com.example.ui.theme.EmeraldPrimary
 import com.example.ui.theme.GoldAccent
 import com.example.ui.theme.GoldLight
+import com.example.util.AppUpdateChecker
 
 @Composable
 fun AppUpdateDialog(
@@ -245,33 +246,53 @@ fun AppUpdateDialog(
 
                 // Release notes (hidden when downloading to keep focus on progress)
                 if (!updateInfo.isDownloading && updateInfo.releaseNotesAr.isNotBlank()) {
+                    val noteItems = AppUpdateChecker.extractReleaseNoteItems(updateInfo.releaseNotesAr)
                     Spacer(modifier = Modifier.height(14.dp))
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 120.dp),
+                            .heightIn(max = 185.dp)
+                            .testTag("update_release_notes_card"),
                         shape = RoundedCornerShape(14.dp),
-                        color = Color(0x20000000),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x22FFFFFF))
+                        color = Color(0x28000000),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.35f))
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(12.dp)
-                                .verticalScroll(rememberScrollState())
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "ما الجديد في هذا الإصدار:",
-                                style = MaterialTheme.typography.labelSmall,
+                                text = "✨ ما تم إضافته في الإصدار v${updateInfo.latestVersionName}:",
+                                style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = GoldAccent
+                                color = GoldLight
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = updateInfo.releaseNotesAr,
-                                style = MaterialTheme.typography.bodySmall.copy(lineHeight = 20.sp),
-                                color = Color(0xEEFFFFFF)
-                            )
+                            noteItems.forEach { (emoji, featureText) ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0x16FFFFFF))
+                                        .padding(horizontal = 10.dp, vertical = 7.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Text(
+                                        text = emoji,
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.padding(top = 1.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = featureText,
+                                        style = MaterialTheme.typography.bodySmall.copy(lineHeight = 19.sp),
+                                        color = Color(0xF0FFFFFF),
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
                         }
                     }
                 }

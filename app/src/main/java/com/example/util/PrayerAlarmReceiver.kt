@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.Intent
 import com.example.data.PreferencesManager
 import com.example.model.PrayerType
+import com.example.service.PrayerTimeNotificationService
 import com.example.widget.PrayerWidgetProvider
+import com.example.worker.PrayerSyncWorkScheduler
 
 class PrayerAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -26,6 +28,8 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
             )
             val cityName = if (city.nameAr.isNotEmpty()) city.nameAr else city.name
             AdhanNotificationHelper.scheduleAllPrayers(context, times, cityName)
+            PrayerTimeNotificationService.syncServiceState(context)
+            PrayerSyncWorkScheduler.syncWorkState(context)
             return
         }
 
@@ -35,10 +39,14 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
                 val prayerName = intent.getStringExtra(AdhanNotificationHelper.EXTRA_PRAYER_NAME) ?: "الصلاة"
                 val cityName = intent.getStringExtra(AdhanNotificationHelper.EXTRA_CITY_NAME) ?: ""
 
-                val notificationId = try {
-                    PrayerType.valueOf(prayerTypeStr).ordinal + 100
+                val prayerType = try {
+                    PrayerType.valueOf(prayerTypeStr)
                 } catch (_: Exception) {
-                    100
+                    null
+                }
+                val notificationId = (prayerType?.ordinal ?: 0) + 100
+                if (prayerType != null) {
+                    PrayerTimeNotificationService.markPrayerNotified(context, prayerType)
                 }
 
                 AdhanNotificationHelper.cancelOngoingCountdownNotification(context)
@@ -48,6 +56,7 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
                     cityName = cityName,
                     notificationId = notificationId
                 )
+                PrayerTimeNotificationService.syncServiceState(context)
                 PrayerWidgetProvider.updateAllWidgets(context)
             }
 
@@ -150,7 +159,9 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
             }
 
             AdhanNotificationHelper.ACTION_DISMISS_ONGOING -> {
+                PreferencesManager(context).isOngoingCountdownEnabled = false
                 AdhanNotificationHelper.cancelOngoingCountdownNotification(context)
+                PrayerTimeNotificationService.stopMonitoring(context)
             }
         }
     }

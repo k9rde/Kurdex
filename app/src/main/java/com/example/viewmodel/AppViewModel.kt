@@ -24,12 +24,14 @@ import com.example.model.JuristicMethod
 import com.example.model.PrayerItem
 import com.example.model.PrayerType
 import com.example.model.TasbihItem
+import com.example.service.PrayerTimeNotificationService
 import com.example.util.AdhanNotificationHelper
 import com.example.util.AppUpdateChecker
 import com.example.util.CityData
 import com.example.util.PrayerCalculator
 import com.example.util.SoundAndHapticHelper
 import com.example.widget.PrayerWidgetProvider
+import com.example.worker.PrayerSyncWorkScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -266,6 +268,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         AdhanNotificationHelper.createNotificationChannel(application)
+        PrayerTimeNotificationService.syncServiceState(application)
         updateMagneticDeclination(savedCity.latitude, savedCity.longitude)
         recalculatePrayerTimes()
         recalculateQibla()
@@ -274,7 +277,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _uiState.update { it.copy(showLocationOnboardingDialog = true) }
         }
 
-        // Auto sync with Internet if enabled
+        // Auto sync with Internet & schedule WorkManager periodic background sync
+        PrayerSyncWorkScheduler.syncWorkState(application)
         if (prefs.isAutoSyncOnlineEnabled) {
             syncPrayerTimesWithOnline()
         }
@@ -354,6 +358,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 prefs.saveCachedDayTimings(cacheKey, cacheJson.toString())
                 prefs.lastSyncTimestamp = System.currentTimeMillis()
+                prefs.recordSyncedLocationAndDate(
+                    latitude = state.selectedCity.latitude,
+                    longitude = state.selectedCity.longitude,
+                    dateKey = "${y}_${m}_${d}"
+                )
 
                 val nowInCity = Calendar.getInstance(cityTz)
                 val syncFormatted12 = PrayerCalculator.format12FromHourMinute(nowInCity.get(Calendar.HOUR_OF_DAY), nowInCity.get(Calendar.MINUTE))
@@ -385,6 +394,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val newVal = !_uiState.value.isAutoSyncEnabled
         prefs.isAutoSyncOnlineEnabled = newVal
         _uiState.update { it.copy(isAutoSyncEnabled = newVal) }
+        PrayerSyncWorkScheduler.syncWorkState(getApplication())
         if (newVal) {
             syncPrayerTimesWithOnline()
         }
@@ -415,6 +425,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
         recalculatePrayerTimes()
         recalculateQibla()
+        PrayerSyncWorkScheduler.onLocationUpdated(getApplication(), city.latitude, city.longitude)
         if (_uiState.value.isAutoSyncEnabled) {
             syncPrayerTimesWithOnline()
         }
@@ -806,7 +817,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         // Ongoing persistent countdown notification (auto-clears at prayer time and stays hidden for 5 mins after Adhan)
-        if (state.dayOffset == 0 && state.isOngoingCountdownEnabled) {
+        if (!state.isOngoingCountdownEnabled) {
+            if (lastOngoingMinute != -2L) {
+                lastOngoingMinute = -2L
+                AdhanNotificationHelper.cancelOngoingCountdownNotification(getApplication())
+            }
+        } else if (state.dayOffset == 0) {
             val prevPrayer = times.previousPrayer
             val justEnteredPrayer = prevPrayer != null && (now - prevPrayer.timestampMillis) in 0L..(5 * 60_000L)
             val nextPrayer = times.nextPrayer
@@ -821,13 +837,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 val remMinute = remMillis / 60_000L
                 if (remMinute != lastOngoingMinute) {
                     lastOngoingMinute = remMinute
-                    AdhanNotificationHelper.updateOngoingCountdownNotification(
-                        context = getApplication(),
-                        nextPrayerName = nextPrayer.type.titleAr,
-                        nextPrayerTimeFormatted = nextPrayer.timeFormatted,
-                        remainingMillis = remMillis,
-                        cityName = cName
-                    )
+                    // Let PrayerTimeNotificationService handle the persistent status notification cleanly
+                    PrayerTimeNotificationService.syncServiceState(getApplication())
                 }
             }
         }
@@ -1371,6 +1382,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 AdhanNotificationHelper.scheduleAllPrayers(getApplication(), it, cityName)
             }
         }
+        PrayerTimeNotificationService.syncServiceState(getApplication())
     }
 
     fun selectAdhanVoice(voiceId: String) {
@@ -1512,8 +1524,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     currentVersionCode = currentCode,
                     currentVersionName = currentName,
                     latestVersionCode = currentCode + 1,
-                    latestVersionName = "1.4.2",
-                    releaseNotesAr = "• إصلاح فحص التحديثات التلقائي وإعادة المحاولة عند فتح التطبيق\n• مشاركة الستوري بدقة 9:16 كاملة مع أيقونة التطبيق في الزاوية\n• تحسين استقرار خادم التحميل المباشر للتحديثات",
+                    latestVersionName = "1.4.8",
+                    releaseNotesAr = "🔄 جدولة مزامنة دورية في الخلفية عبر WorkManager لتحديث المواقيت عند توفر الإنترنت وتغيّر الموقع\n🎛️ خيار في الإعدادات لإظهار أو إخفاء إشعار العد التنازلي الدائم في لوحة الإشعارات\n✨ عرض ما تم إضافته في كل تحديث مع رموز وإيموجيات توضيحية داخل التطبيق وصفحة التحميل\n🧭 ترقية بوصلة القبلة بمعادلة فينسنتي وتعويض الإمالة ثلاثي الأبعاد",
                     telegramChannelUrl = AppUpdateChecker.TELEGRAM_CHANNEL_URL,
                     directApkDownloadUrl = AppUpdateChecker.DIRECT_APK_DOWNLOAD_URL,
                     isMandatory = false,
@@ -1749,23 +1761,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         prefs.isOngoingCountdownEnabled = newVal
         lastOngoingMinute = -1L
         _uiState.update { it.copy(isOngoingCountdownEnabled = newVal) }
-        if (!newVal) {
-            AdhanNotificationHelper.cancelOngoingCountdownNotification(getApplication())
-        } else {
-            val state = _uiState.value
-            val times = state.prayerTimes
-            val next = times?.nextPrayer
-            if (next != null) {
-                val cName = state.selectedCity.nameAr.ifEmpty { state.selectedCity.name }
-                AdhanNotificationHelper.updateOngoingCountdownNotification(
-                    context = getApplication(),
-                    nextPrayerName = next.type.titleAr,
-                    nextPrayerTimeFormatted = next.timeFormatted,
-                    remainingMillis = (next.timestampMillis - System.currentTimeMillis()).coerceAtLeast(0L),
-                    cityName = cName
-                )
-            }
-        }
+        AdhanNotificationHelper.cancelOngoingCountdownNotification(getApplication())
+        PrayerTimeNotificationService.syncServiceState(getApplication())
     }
 
     fun saveCustomUpdateUrl(url: String) {

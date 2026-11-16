@@ -40,6 +40,7 @@ import com.example.model.AdhanVoice
 import com.example.model.CalculationMethod
 import com.example.model.JuristicMethod
 import com.example.ui.theme.*
+import com.example.util.AppUpdateChecker
 import com.example.viewmodel.AppUiState
 import com.example.viewmodel.AppViewModel
 
@@ -373,12 +374,12 @@ fun SettingsScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "إشعار حي للعد التنازلي في شريط الإشعارات",
+                                    text = "إشعار العد التنازلي الدائم في لوحة الإشعارات",
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = "يعرض الوقت المتبقي للصلاة القادمة بهدوء في شريط الهاتف",
+                                    text = "يعرض الصلاة القادمة والوقت المتبقي في لوحة الإشعارات (اختياري — تعطيله يخفي الإشعار الدائم مع بقاء الأذان يعمل)",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -1313,6 +1314,40 @@ fun SettingsScreen(
                                     else -> EmeraldLight
                                 }
                             )
+                        }
+
+                        if (uiState.updateInfo.isUpdateAvailable && uiState.updateInfo.releaseNotesAr.isNotBlank()) {
+                            val highlights = AppUpdateChecker.extractReleaseNoteItems(uiState.updateInfo.releaseNotesAr)
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = GoldAccent.copy(alpha = 0.12f),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, GoldAccent.copy(alpha = 0.35f)),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.showAvailableUpdateDialog() }
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(10.dp),
+                                    verticalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Text(
+                                        text = "✨ ما الجديد في v${uiState.updateInfo.latestVersionName}:",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = GoldAccent
+                                    )
+                                    highlights.take(3).forEach { (emoji, text) ->
+                                        Text(
+                                            text = "$emoji $text",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(14.dp))

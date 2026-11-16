@@ -54,6 +54,9 @@ class PreferencesManager(context: Context) {
         private const val KEY_ADHKAR_PROGRESS_PREFIX = "adhkar_prog_"
         private const val KEY_CUSTOM_UPDATE_URL = "custom_update_url"
         private const val KEY_POST_PRAYER_FOLLOWUP_ENABLED = "post_prayer_followup_enabled"
+        private const val KEY_LAST_SYNCED_LAT = "work_last_synced_lat"
+        private const val KEY_LAST_SYNCED_LNG = "work_last_synced_lng"
+        private const val KEY_LAST_SYNCED_DATE_KEY = "work_last_synced_date_key"
     }
 
     var customUpdateUrl: String
@@ -218,6 +221,24 @@ class PreferencesManager(context: Context) {
     var lastSyncTimestamp: Long
         get() = prefs.getLong(KEY_LAST_SYNC_TIMESTAMP, 0L)
         set(value) = prefs.edit().putLong(KEY_LAST_SYNC_TIMESTAMP, value).apply()
+
+    val lastSyncedLatitude: Double?
+        get() = prefs.getString(KEY_LAST_SYNCED_LAT, null)?.toDoubleOrNull()
+
+    val lastSyncedLongitude: Double?
+        get() = prefs.getString(KEY_LAST_SYNCED_LNG, null)?.toDoubleOrNull()
+
+    var lastSyncedDateKey: String
+        get() = prefs.getString(KEY_LAST_SYNCED_DATE_KEY, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_LAST_SYNCED_DATE_KEY, value).apply()
+
+    fun recordSyncedLocationAndDate(latitude: Double, longitude: Double, dateKey: String) {
+        prefs.edit()
+            .putString(KEY_LAST_SYNCED_LAT, latitude.toString())
+            .putString(KEY_LAST_SYNCED_LNG, longitude.toString())
+            .putString(KEY_LAST_SYNCED_DATE_KEY, dateKey)
+            .apply()
+    }
 
     fun getCachedDayTimings(key: String): String? = prefs.getString(KEY_CACHED_ONLINE_TIMINGS + key, null)
 
