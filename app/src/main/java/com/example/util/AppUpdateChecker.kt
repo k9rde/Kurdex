@@ -22,8 +22,8 @@ import java.util.concurrent.TimeUnit
 object AppUpdateChecker {
     private const val TAG = "AppUpdateChecker"
 
-    const val CURRENT_VERSION_CODE = 12
-    const val CURRENT_VERSION_NAME = "1.4.8"
+    const val CURRENT_VERSION_CODE = 13
+    const val CURRENT_VERSION_NAME = "1.4.9"
 
     const val TELEGRAM_CHANNEL_URL = "https://t.me/AS3SA"
     const val TELEGRAM_DEEP_LINK = "tg://resolve?domain=AS3SA"

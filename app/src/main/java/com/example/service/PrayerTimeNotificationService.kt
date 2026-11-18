@@ -475,8 +475,13 @@ class PrayerTimeNotificationService : Service() {
 
                     val notificationId = NOTIFICATION_ID_ALERT_BASE + item.type.ordinal
                     val voice = AdhanVoice.getById(prefs.selectedAdhanVoiceId)
+                    val shouldPlayAudio = AdhanNotificationHelper.shouldPlayAdhanAudio(context)
                     AdhanNotificationHelper.cancelOngoingCountdownNotification(context)
-                    AdhanNotificationHelper.playVoice(context, voice)
+                    if (shouldPlayAudio) {
+                        AdhanNotificationHelper.playVoice(context, voice)
+                    } else {
+                        AdhanNotificationHelper.stopAudio()
+                    }
 
                     val openIntent = Intent(context, MainActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -503,7 +508,7 @@ class PrayerTimeNotificationService : Service() {
                     val summary = "${item.timeFormatted} • ${resolved.locationLabel}"
                     val bigBody = "الله أكبر، الله أكبر\nحان الآن موعد أذان ${item.type.titleAr} (${item.timeFormatted}) في ${resolved.locationLabel}\nصوت المؤذن: ${voice.nameAr}"
 
-                    val alertNotification = NotificationCompat.Builder(context, AdhanNotificationHelper.CHANNEL_ID)
+                    val alertBuilder = NotificationCompat.Builder(context, AdhanNotificationHelper.CHANNEL_ID)
                         .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(title)
                         .setContentText(summary)
@@ -513,9 +518,16 @@ class PrayerTimeNotificationService : Service() {
                         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                         .setContentIntent(openPendingIntent)
                         .setAutoCancel(true)
-                        .setVibrate(longArrayOf(0, 500, 300, 500))
-                        .addAction(android.R.drawable.ic_media_pause, "إيقاف الصوت", stopPendingIntent)
-                        .build()
+
+                    if (shouldPlayAudio) {
+                        alertBuilder
+                            .setVibrate(longArrayOf(0, 500, 300, 500))
+                            .addAction(android.R.drawable.ic_media_pause, "إيقاف الصوت", stopPendingIntent)
+                    } else {
+                        alertBuilder.setSilent(true)
+                    }
+
+                    val alertNotification = alertBuilder.build()
 
                     if (canPostNotifications(context)) {
                         try {

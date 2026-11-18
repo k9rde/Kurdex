@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
@@ -159,7 +160,35 @@ object AdhanNotificationHelper {
     }
 
     /**
-     * Shows phone notification and plays the Imam's voice saying "الله أكبر الله أكبر".
+     * Returns true ONLY when the device is in Normal ringer mode AND Do Not Disturb is OFF.
+     * In Silent, Vibrate, or any Do Not Disturb mode, returns false so prayer notifications
+     * appear silently without playing Adhan audio.
+     */
+    fun shouldPlayAdhanAudio(context: Context): Boolean {
+        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+        if (audioManager != null && audioManager.ringerMode != AudioManager.RINGER_MODE_NORMAL) {
+            return false
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val notificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            if (notificationManager != null) {
+                val filter = notificationManager.currentInterruptionFilter
+                if (filter != NotificationManager.INTERRUPTION_FILTER_ALL &&
+                    filter != NotificationManager.INTERRUPTION_FILTER_UNKNOWN
+                ) {
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
+
+    /**
+     * Shows phone notification and plays the Imam's voice saying "الله أكبر الله أكبر"
+     * only when the device is in Normal mode (not Silent / Vibrate / Do Not Disturb).
      */
     fun showAdhanNotification(
         context: Context,
@@ -173,9 +202,14 @@ object AdhanNotificationHelper {
         if (!prefs.isAdhanNotificationEnabled) return
 
         val voice = AdhanVoice.getById(prefs.selectedAdhanVoiceId)
+        val shouldPlayAudio = shouldPlayAdhanAudio(context)
 
-        // Play the imam voice "الله أكبر الله أكبر"
-        playVoice(context, voice)
+        // Play the imam voice "الله أكبر الله أكبر" only in Normal mode
+        if (shouldPlayAudio) {
+            playVoice(context, voice)
+        } else {
+            stopAudio()
+        }
 
         // Open App Intent
         val contentIntent = Intent(context, MainActivity::class.java).apply {
@@ -225,12 +259,18 @@ object AdhanNotificationHelper {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(contentPendingIntent)
             .setAutoCancel(true)
-            .setVibrate(longArrayOf(0, 500, 300, 500))
-            .addAction(
-                android.R.drawable.ic_media_pause,
-                "إيقاف الصوت",
-                stopPendingIntent
-            )
+
+        if (shouldPlayAudio) {
+            builder
+                .setVibrate(longArrayOf(0, 500, 300, 500))
+                .addAction(
+                    android.R.drawable.ic_media_pause,
+                    "إيقاف الصوت",
+                    stopPendingIntent
+                )
+        } else {
+            builder.setSilent(true)
+        }
 
         try {
             val notificationManager = NotificationManagerCompat.from(context)

@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
+import android.media.AudioManager
 import androidx.test.core.app.ApplicationProvider
 import com.example.data.PreferencesManager
 import com.example.model.PrayerType
@@ -159,5 +160,49 @@ class PrayerTimeNotificationServiceTest {
             PrayerTimeNotificationService::class.java.name,
             startedIntent?.component?.className
         )
+    }
+
+    @Test
+    fun adhanAudio_respectsRingerModeAndDoNotDisturb() {
+        val audioManager = application.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val shadowNm = Shadows.shadowOf(notificationManager)
+        shadowNm.setNotificationPolicyAccessGranted(true)
+
+        // Normal ringer + DND off -> should play Adhan audio
+        audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+        notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+        assertTrue(AdhanNotificationHelper.shouldPlayAdhanAudio(application))
+
+        // Silent mode -> notification only, no Adhan audio
+        audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+        assertFalse(AdhanNotificationHelper.shouldPlayAdhanAudio(application))
+
+        // Vibrate mode -> notification only, no Adhan audio
+        audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+        assertFalse(AdhanNotificationHelper.shouldPlayAdhanAudio(application))
+
+        // Normal ringer + Do Not Disturb (Priority / None / Alarms) -> no Adhan audio
+        audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+        notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+        assertFalse(AdhanNotificationHelper.shouldPlayAdhanAudio(application))
+
+        notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_NONE)
+        assertFalse(AdhanNotificationHelper.shouldPlayAdhanAudio(application))
+
+        notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALARMS)
+        assertFalse(AdhanNotificationHelper.shouldPlayAdhanAudio(application))
+
+        // Notification itself still posts silently in DND without the stop-audio button
+        val prefs = PreferencesManager(application)
+        prefs.isAdhanNotificationEnabled = true
+        AdhanNotificationHelper.showAdhanNotification(
+            context = application,
+            prayerNameAr = "المغرب",
+            cityName = "الموصل",
+            notificationId = 555
+        )
+        val posted = shadowNm.getNotification(555)
+        assertNotNull("Silent Adhan notification must still be displayed", posted)
+        assertTrue("Stop audio action must be omitted when audio is muted", posted.actions.isNullOrEmpty())
     }
 }

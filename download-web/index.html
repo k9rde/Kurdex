@@ -139,18 +139,17 @@
 <body>
     <div class="card">
         <img src="app_icon.jpg" alt="أيقونة صلاتي وأذكاري" class="icon">
-        <div class="version-pill" id="version-badge">✨ آخر إصدار: v1.4.8</div>
+        <div class="version-pill" id="version-badge">✨ آخر إصدار: v1.4.9</div>
         <h1>صلاتي وأذكاري</h1>
         <p class="subtitle">المواقيت الدقيقة لكافة أشهر السنة ومختلف دول العالم، إمساكية تفاعلية، أصوات كبار الأئمة، بوصلة القبلة، والمسبحة الزجاجية الفاخرة</p>
 
         <div class="whats-new-box" id="whats-new-box">
-            <div class="section-title" id="whats-new-title">✨ ما تم إضافته في آخر نسخة (v1.4.8):</div>
+            <div class="section-title" id="whats-new-title">✨ ما تم إضافته في آخر نسخة (v1.4.9):</div>
             <div class="whats-new-list" id="whats-new-list">
-                <div class="whats-new-item">🔄 جدولة مزامنة دورية في الخلفية عبر WorkManager لتحديث المواقيت تلقائياً عند توفر الإنترنت وتغيّر الموقع الجغرافي</div>
-                <div class="whats-new-item">🎛️ التحكم بإظهار أو إخفاء إشعار العد التنازلي الدائم في لوحة الإشعارات مباشرة من الإعدادات (اختياري حسب رغبتك)</div>
+                <div class="whats-new-item">🔕 احترام وضع الصامت وعدم الإزعاج: يظهر إشعار وقت الصلاة بصمت تام بدون صوت أذان عند تفعيل الصامت أو الهزاز أو عدم الإزعاج، ويعمل بصوت الأذان الكامل في الوضع العام</div>
+                <div class="whats-new-item">🔄 جدولة مزامنة دورية في الخلفية عبر WorkManager لتحديث المواقيت تلقائياً عند توفر الإنترنت وتغيّر الموقع</div>
+                <div class="whats-new-item">🎛️ التحكم بإظهار أو إخفاء إشعار العد التنازلي الدائم في لوحة الإشعارات مباشرة من الإعدادات</div>
                 <div class="whats-new-item">✨ عرض ما تم إضافته في كل تحديث مع رموز وإيموجيات توضيحية داخل التطبيق وصفحة التحميل</div>
-                <div class="whats-new-item">🔔 تنبيهات دقيقة عند دخول كل صلاة حسب موقعك الحالي عبر NotificationManager والمنبهات الدقيقة</div>
-                <div class="whats-new-item">🧭 ترقية بوصلة القبلة بمعادلة فينسنتي (WGS84) وتعويض الإمالة ثلاثي الأبعاد</div>
             </div>
         </div>
 
@@ -163,7 +162,7 @@
             <div class="feature-item"><span>📱</span> ويدجت الشاشة الرئيسية وإشعارات الأذان بأصوات كبار الأئمة</div>
         </div>
         <a href="salati-app.apk" id="download-apk-btn" class="btn" download>📥 تحميل أحدث إصدار الآن (APK)</a>
-        <div class="size-info" id="version-footer">الإصدار 1.4.8 • متوافق مع كافة أجهزة أندرويد</div>
+        <div class="size-info" id="version-footer">الإصدار 1.4.9 • متوافق مع كافة أجهزة أندرويد</div>
 
         <div style="margin-top: 26px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
             <div style="font-size: 14px; font-weight: bold; color: #FAF089; margin-bottom: 12px; letter-spacing: 0.5px;">للتواصل مع المطور</div>
@@ -190,7 +189,9 @@
                 if (badge) badge.textContent = '✨ آخر إصدار: v' + data.versionName;
                 if (title) title.textContent = '✨ ما تم إضافته في آخر نسخة (v' + data.versionName + '):';
                 if (footer) footer.textContent = 'الإصدار ' + data.versionName + ' • متوافق مع كافة أجهزة أندرويد';
-                if (btn && data.downloadUrl) btn.setAttribute('href', data.downloadUrl);
+                if (btn && data.downloadUrl && data.downloadUrl.indexOf('ais-dev-') === -1) {
+                    btn.setAttribute('href', data.downloadUrl);
+                }
 
                 if (list && data.releaseNotes) {
                     var lines = data.releaseNotes.split('\n')

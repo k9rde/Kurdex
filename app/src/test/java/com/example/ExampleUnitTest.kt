@@ -220,8 +220,8 @@ class ExampleUnitTest {
         // Check Mosul Iraq Qibla angle roughly south (~190 degrees)
         val qiblaMosul = PrayerCalculator.getQiblaAngle(36.3489, 43.1577)
         assertTrue("Mosul Qibla should point South/Southwest (~190 deg), got $qiblaMosul", qiblaMosul in 180.0..200.0)
-        assertEquals(12, com.example.util.AppUpdateChecker.CURRENT_VERSION_CODE)
-        assertEquals("1.4.8", com.example.util.AppUpdateChecker.CURRENT_VERSION_NAME)
+        assertEquals(13, com.example.util.AppUpdateChecker.CURRENT_VERSION_CODE)
+        assertEquals("1.4.9", com.example.util.AppUpdateChecker.CURRENT_VERSION_NAME)
     }
 
     @Test
@@ -231,9 +231,9 @@ class ExampleUnitTest {
         assertTrue(urls.any { it == "https://raw.githubusercontent.com/myuser/salati-app/master/download-web/version.json" })
         assertTrue(urls.any { it == "https://api.github.com/repos/myuser/salati-app/releases/latest" })
 
-        assertTrue(com.example.util.AppUpdateChecker.isRemoteVersionNewer(12, 12, "1.5.0", "1.4.8"))
-        assertFalse(com.example.util.AppUpdateChecker.isRemoteVersionNewer(12, 12, "1.4.8", "1.4.8"))
-        assertTrue(com.example.util.AppUpdateChecker.isRemoteVersionNewer(13, 12, "1.4.8", "1.4.8"))
+        assertTrue(com.example.util.AppUpdateChecker.isRemoteVersionNewer(13, 13, "1.5.0", "1.4.9"))
+        assertFalse(com.example.util.AppUpdateChecker.isRemoteVersionNewer(13, 13, "1.4.9", "1.4.9"))
+        assertTrue(com.example.util.AppUpdateChecker.isRemoteVersionNewer(14, 13, "1.4.9", "1.4.9"))
     }
 
     @Test
