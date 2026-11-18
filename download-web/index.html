@@ -189,9 +189,6 @@
                 if (badge) badge.textContent = '✨ آخر إصدار: v' + data.versionName;
                 if (title) title.textContent = '✨ ما تم إضافته في آخر نسخة (v' + data.versionName + '):';
                 if (footer) footer.textContent = 'الإصدار ' + data.versionName + ' • متوافق مع كافة أجهزة أندرويد';
-                if (btn && data.downloadUrl && data.downloadUrl.indexOf('ais-dev-') === -1) {
-                    btn.setAttribute('href', data.downloadUrl);
-                }
 
                 if (list && data.releaseNotes) {
                     var lines = data.releaseNotes.split('\n')

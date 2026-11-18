@@ -13,7 +13,7 @@ data class AppUpdateInfo(
     val latestVersionName: String = "1.4.9",
     val releaseNotesAr: String = "",
     val telegramChannelUrl: String = "https://t.me/AS3SA",
-    val directApkDownloadUrl: String = "https://k9rde.github.io/kurdex/salati-app.apk",
+    val directApkDownloadUrl: String = "https://k9rde.github.io/Kurdex/salati-app.apk",
     val isMandatory: Boolean = false,
     val isPreview: Boolean = false,
     val checkStatusMessage: String = "",
