@@ -29,6 +29,7 @@ object AppUpdateChecker {
     const val TELEGRAM_DEEP_LINK = "tg://resolve?domain=AS3SA"
     const val DIRECT_APK_DOWNLOAD_URL = "https://k9rde.github.io/Kurdex/salati-app.apk"
     private const val REMOTE_VERSION_URL = "https://k9rde.github.io/Kurdex/version.json"
+    private const val GITHUB_RAW_VERSION_URL = "https://raw.githubusercontent.com/k9rde/Kurdex/main/download-web/version.json"
     private const val SHARED_VERSION_URL = "https://ais-pre-u3bbyddierfnvqnk2dov33-152810655533.europe-west2.run.app/version.json"
     private const val LOCAL_DEV_VERSION_URL = "http://127.0.0.1:8080/version.json"
     private const val LOCAL_DEV_APK_URL = "http://127.0.0.1:8080/salati-app.apk"
@@ -99,6 +100,7 @@ object AppUpdateChecker {
         }
 
         result.add(REMOTE_VERSION_URL)
+        result.add(GITHUB_RAW_VERSION_URL)
         result.add(SHARED_VERSION_URL)
         result.add(LOCAL_DEV_VERSION_URL)
         return result.distinct()
