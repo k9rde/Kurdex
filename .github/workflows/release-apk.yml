@@ -1,0 +1,68 @@
+name: Create GitHub Release & Sync Repo Metadata
+
+on:
+  push:
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read version metadata from download-web/version.json
+        id: meta
+        run: |
+          VERSION=$(jq -r '.versionName' download-web/version.json)
+          CODE=$(jq -r '.versionCode' download-web/version.json)
+          NOTES=$(jq -r '.releaseNotes' download-web/version.json)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          {
+            echo "notes<<EOF"
+            echo "## ✨ ما تم إضافته في الإصدار v$VERSION (Build $CODE)"
+            echo ""
+            echo "$NOTES"
+            echo ""
+            echo "---"
+            echo "📥 **صفحة التحميل المباشرة:** https://k9rde.github.io/Kurdex/"
+            echo "📲 **رابط APK مباشر:** https://k9rde.github.io/Kurdex/salati-app.apk"
+            echo "✈️ **قناة التليكرام:** https://t.me/AS3SA"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release with APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: "صلاتي وأذكاري ${{ steps.meta.outputs.tag }}"
+          body: ${{ steps.meta.outputs.notes }}
+          draft: false
+          prerelease: false
+          make_latest: true
+          files: |
+            download-web/salati-app.apk
+
+      - name: Attempt to update repository About & Topics
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method PATCH "/repos/${{ github.repository }}" \
+            -f description="🕌 تطبيق صلاتي وأذكاري للأندرويد — مواقيت الصلاة الدقيقة، بوصلة القبلة، الأذكار، الورد القرآني، والمسبحة الزجاجية بتصميم Material 3" \
+            -f homepage="https://k9rde.github.io/Kurdex/" || true
+          gh api --method PUT "/repos/${{ github.repository }}/topics" \
+            -f "names[]=android" \
+            -f "names[]=kotlin" \
+            -f "names[]=jetpack-compose" \
+            -f "names[]=prayer-times" \
+            -f "names[]=qibla" \
+            -f "names[]=islamic-app" \
+            -f "names[]=adhan" \
+            -f "names[]=workmanager" || true
